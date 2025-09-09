@@ -1,0 +1,445 @@
+<template>
+  <div class="app-container">
+    <!-- 筛选表单 -->
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="100px">
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-form-item label="项目单位" prop="unitId">
+            <user-project-units v-model="queryParams.unitId" :multiple="false" :placeholder="'请选择'" @change="handleUnitChange" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="检查类型" prop="checkTypeId">
+            <check-type-select v-model="queryParams.checkTypeId" :unitId="queryParams.unitId" :multiple="false" :placeholder="'请选择'" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="分解单位" prop="decomposeUnitId">
+            <unit-tree-select v-model="queryParams.decomposeUnitId" :multiple="false" :parentId="queryParams.unitId" :placeholder="'请选择'" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="处理单位" prop="processUnitId">
+            <unit-tree-select v-model="queryParams.processUnitId" :multiple="false" :parentId="queryParams.unitId" :placeholder="'请选择'" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-form-item label="问题编号" prop="problemCode">
+            <el-input v-model="queryParams.problemCode" placeholder="请输入问题编码" clearable />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="行政区域" prop="adminRegion">
+            <region-cascader v-model="queryParams.adminRegion" :placeholder="'请选择'" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="检查分类" prop="checkCategory">
+            <el-select v-model="queryParams.checkCategory" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.snv_check_category" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="检查内容" prop="checkContent">
+            <el-select v-model="queryParams.checkContent" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.snv_check_content" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-form-item label="问题描述" prop="problemDescription">
+            <el-input v-model="queryParams.problemDescription" type="textarea" :rows="2" placeholder="请输入问题描述" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="紧急程度" prop="urgencyLevel">
+            <el-select v-model="queryParams.urgencyLevel" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.snv_urgency_level" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="queryParams.status" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.snv_event_status" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="巡护员" prop="patrolOfficer">
+            <el-input v-model="queryParams.patrolOfficer" placeholder="请输入巡护员" clearable />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-form-item label="真实巡护员" prop="realPatrolOfficer">
+            <el-input v-model="queryParams.realPatrolOfficer" placeholder="请输入真实巡护员" clearable />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="分解类型" prop="decomposeType">
+            <el-select v-model="queryParams.decomposeType" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.snv_decompose_type" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="是否自处理" prop="isSelfProcess">
+            <el-select v-model="queryParams.isSelfProcess" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.sys_yes_no" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="村庄" prop="village">
+            <el-select v-model="queryParams.village" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.snv_village" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-form-item label="检查对象" prop="checkObject">
+            <el-input v-model="queryParams.checkObject" placeholder="请输入检查对象" clearable />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="所属网格" prop="affiliatedGrid">
+            <el-select v-model="queryParams.affiliatedGrid" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.snv_grid" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="同步状态" prop="syncStatus">
+            <el-select v-model="queryParams.syncStatus" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.snv_sync_status" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="上报时间" prop="reportTimeStart">
+            <el-date-picker
+              v-model="queryParams.reportTimeStart"
+              type="date"
+              value-format="yyyy-MM-dd"
+              placeholder="开始时间"
+              style="width: 100%;"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-form-item label="至" prop="reportTimeEnd">
+            <el-date-picker
+              v-model="queryParams.reportTimeEnd"
+              type="date"
+              value-format="yyyy-MM-dd"
+              placeholder="结束时间"
+              style="width: 100%;"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="结案时间" prop="closeTimeStart">
+            <el-date-picker
+              v-model="queryParams.closeTimeStart"
+              type="date"
+              value-format="yyyy-MM-dd"
+              placeholder="开始时间"
+              style="width: 100%;"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="至" prop="closeTimeEnd">
+            <el-date-picker
+              v-model="queryParams.closeTimeEnd"
+              type="date"
+              value-format="yyyy-MM-dd"
+              placeholder="结束时间"
+              style="width: 100%;"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="工单来源" prop="workOrderSource">
+            <el-select v-model="queryParams.workOrderSource" placeholder="请选择" clearable style="width: 100%;">
+              <el-option v-for="dict in dict.type.snv_work_order_source" :key="dict.value" :label="dict.label" :value="dict.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :span="24">
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <el-button type="success" icon="el-icon-download" size="mini" @click="handleExport">导出</el-button>
+            <el-button type="warning" icon="el-icon-location" size="mini" @click="handleExportLatLon">导出经纬度</el-button>
+            <el-button type="info" icon="el-icon-document" size="mini" @click="handleExportPdf">导出pdf</el-button>
+            <el-button type="info" icon="el-icon-more" size="mini" @click="showMoreConditions">更多条件</el-button>
+            <el-button type="success" icon="el-icon-refresh" size="mini" @click="syncProvincialPlatform">同步省平台</el-button>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+
+    <!-- 数据表格 -->
+    <el-table v-loading="loading" :data="eventList" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column label="消息状态" align="center" prop="messageStatus" width="80">
+        <template slot-scope="scope">
+          <i class="el-icon-message" style="color: #E6A23C; font-size: 18px;"></i>
+        </template>
+      </el-table-column>
+      <el-table-column label="项目单位" align="center" prop="unitName" />
+      <el-table-column label="问题编码" align="center" prop="problemCode">
+        <template slot-scope="scope">
+          <el-link type="primary" @click="handleDetail(scope.row)">{{ scope.row.problemCode }}</el-link>
+        </template>
+      </el-table-column>
+      <el-table-column label="工单来源" align="center" prop="workOrderSource">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.snv_work_order_source" :value="scope.row.workOrderSource" />
+        </template>
+      </el-table-column>
+      <el-table-column label="工单状态" align="center" prop="workOrderStatus">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.snv_work_order_status" :value="scope.row.workOrderStatus" />
+        </template>
+      </el-table-column>
+      <el-table-column label="紧急程度" align="center" prop="urgencyLevel">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.snv_urgency_level" :value="scope.row.urgencyLevel" />
+        </template>
+      </el-table-column>
+      <el-table-column label="行政区域" align="center" prop="adminRegion" />
+      <el-table-column label="行政村" align="center" prop="adminVillage" />
+      <el-table-column label="所属网格" align="center" prop="affiliatedGrid" />
+      <el-table-column label="具体位置" align="center" prop="specificLocation" show-overflow-tooltip />
+      <el-table-column label="事件描述" align="center" prop="eventDescription" show-overflow-tooltip />
+      <el-table-column label="当前处理单位" align="center" prop="currentProcessingUnit" />
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
+          <el-button size="mini" type="primary" @click="handleDetail(scope.row)">详情</el-button>
+          <el-dropdown @command="handleMoreCommand" trigger="click">
+            <el-button size="mini" type="success">
+              更多<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item :command="{action: 'edit', row: scope.row}">编辑</el-dropdown-item>
+              <el-dropdown-item :command="{action: 'export', row: scope.row}">导出</el-dropdown-item>
+              <el-dropdown-item :command="{action: 'print', row: scope.row}">打印</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="queryParams.pageNum"
+      :limit.sync="queryParams.pageSize"
+      @pagination="getList"
+    />
+  </div>
+  </template>
+
+<script>
+import { listEvent } from "@/api/patrol/event"
+import UserProjectUnits from "@/components/UserProjectUnits"
+import UnitTreeSelect from "@/components/UnitTreeSelect"
+import CheckTypeSelect from "@/components/CheckTypeSelect"
+import RegionCascader from "@/components/RegionCascader"
+
+export default {
+  name: "EventRecord",
+  components: {
+    UserProjectUnits,
+    UnitTreeSelect,
+    CheckTypeSelect,
+    RegionCascader
+  },
+  dicts: ['snv_work_order_source', 'snv_work_order_status', 'snv_urgency_level', 'snv_check_category', 'snv_check_content', 'snv_event_status', 'snv_decompose_type', 'sys_yes_no', 'snv_village', 'snv_grid', 'snv_sync_status'],
+  data() {
+    return {
+      // 遮罩层
+      loading: true,
+      // 选中数组
+      ids: [],
+      // 非单个禁用
+      single: true,
+      // 非多个禁用
+      multiple: true,
+      // 显示搜索条件
+      showSearch: true,
+      // 总条数
+      total: 0,
+      // 事件列表
+      eventList: [],
+      // 查询参数
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        unitId: null,
+        checkTypeId: null,
+        decomposeUnitId: null,
+        processUnitId: null,
+        problemCode: null,
+        adminRegion: null,
+        checkCategory: null,
+        checkContent: null,
+        problemDescription: null,
+        urgencyLevel: null,
+        status: null,
+        patrolOfficer: null,
+        realPatrolOfficer: null,
+        decomposeType: null,
+        isSelfProcess: null,
+        village: null,
+        checkObject: null,
+        affiliatedGrid: null,
+        syncStatus: null,
+        reportTimeStart: null,
+        reportTimeEnd: null,
+        closeTimeStart: null,
+        closeTimeEnd: null,
+        workOrderSource: null
+      }
+    }
+  },
+  created() {
+    this.getList()
+  },
+  methods: {
+    // 单位选择变化
+    handleUnitChange(value) {
+      this.queryParams.decomposeUnitId = null
+      this.queryParams.processUnitId = null
+      this.queryParams.checkTypeId = null
+      if (value && typeof value === 'object' && value.unitId) {
+        this.queryParams.unitId = value.unitId
+      }
+    },
+
+    /** 查询事件列表 */
+    getList() {
+      this.loading = true
+      listEvent(this.queryParams).then(response => {
+        this.eventList = response.rows
+        this.total = response.total
+      }).finally(() => {
+        this.loading = false
+      })
+    },
+
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.pageNum = 1
+      this.getList()
+    },
+
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.resetForm("queryForm")
+      this.handleQuery()
+    },
+
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.id)
+      this.single = selection.length !== 1
+      this.multiple = !selection.length
+    },
+
+    // 显示更多条件
+    showMoreConditions() {
+      this.$message.info('更多筛选条件功能开发中...')
+    },
+
+    // 同步省平台
+    syncProvincialPlatform() {
+      this.$message.info('同步省平台功能开发中...')
+    },
+
+    // 导出
+    handleExport() {
+      this.download('patrol/event/export', {
+        ...this.queryParams
+      }, `event_record_${new Date().getTime()}.xlsx`)
+    },
+
+    // 导出经纬度
+    handleExportLatLon() {
+      this.download('patrol/event/exportLatLon', {
+        ...this.queryParams
+      }, `event_latlon_${new Date().getTime()}.xlsx`)
+    },
+
+    // 导出PDF
+    handleExportPdf() {
+      this.download('patrol/event/exportPdf', {
+        ...this.queryParams
+      }, `event_record_${new Date().getTime()}.pdf`)
+    },
+
+    // 事件详情
+    handleDetail(row) {
+      this.$message.info('事件详情功能开发中...')
+    },
+
+    // 更多操作
+    handleMoreCommand(command) {
+      const { action, row } = command
+      switch (action) {
+        case 'edit':
+          this.handleEdit(row)
+          break
+        case 'export':
+          this.handleExportSingle(row)
+          break
+        case 'print':
+          this.handlePrint(row)
+          break
+      }
+    },
+
+    // 编辑
+    handleEdit(row) {
+      this.$message.info('编辑功能开发中...')
+    },
+
+    // 导出单个
+    handleExportSingle(row) {
+      this.$message.info('导出单个功能开发中...')
+    },
+
+    // 打印
+    handlePrint(row) {
+      this.$message.info('打印功能开发中...')
+    }
+  }
+}
+</script>
+
+<style scoped>
+.el-form-item {
+  margin-bottom: 10px;
+}
+</style>
+
