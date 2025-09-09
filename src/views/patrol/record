@@ -1,5 +1,33 @@
 <template>
   <div class="app-container">
+    <!-- 顶部筛选标签：来源 -->
+    <el-row :gutter="0" style="margin-bottom: 10px;">
+      <el-col :span="24">
+        <el-tabs v-model="activeSourceTab" @tab-click="onSourceTabChange">
+          <el-tab-pane label="全部来源" name="" />
+          <el-tab-pane
+            v-for="item in dict.type.snv_work_order_source"
+            :key="item.value"
+            :label="item.label"
+            :name="item.value"
+          />
+        </el-tabs>
+      </el-col>
+    </el-row>
+    <!-- 顶部筛选标签：状态 -->
+    <el-row :gutter="0" style="margin-bottom: 10px;">
+      <el-col :span="24">
+        <el-tabs v-model="activeStatusTab" @tab-click="onStatusTabChange" type="card">
+          <el-tab-pane label="全部状态" name="" />
+          <el-tab-pane
+            v-for="item in dict.type.snv_work_order_status"
+            :key="item.value"
+            :label="item.label"
+            :name="item.value"
+          />
+        </el-tabs>
+      </el-col>
+    </el-row>
     <!-- 筛选表单 -->
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="100px">
       <el-row :gutter="20">
@@ -188,6 +216,7 @@
         <el-col :span="24">
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <el-button icon="el-icon-refresh-left" size="mini" @click="resetQuery">重置</el-button>
             <el-button type="success" icon="el-icon-download" size="mini" @click="handleExport">导出</el-button>
             <el-button type="warning" icon="el-icon-location" size="mini" @click="handleExportLatLon">导出经纬度</el-button>
             <el-button type="info" icon="el-icon-document" size="mini" @click="handleExportPdf">导出pdf</el-button>
@@ -288,6 +317,9 @@ export default {
       multiple: true,
       // 显示搜索条件
       showSearch: true,
+      // 顶部筛选标签
+      activeSourceTab: '',
+      activeStatusTab: '',
       // 总条数
       total: 0,
       // 事件列表
@@ -320,6 +352,9 @@ export default {
         closeTimeStart: null,
         closeTimeEnd: null,
         workOrderSource: null
+        ,
+        // 工单状态
+        workOrderStatus: null
       }
     }
   },
@@ -346,6 +381,20 @@ export default {
     
     /** 搜索按钮操作 */
     handleQuery() {
+      this.queryParams.pageNum = 1
+      this.getList()
+    },
+    
+    // 顶部来源标签变化
+    onSourceTabChange() {
+      this.queryParams.workOrderSource = this.activeSourceTab || null
+      this.queryParams.pageNum = 1
+      this.getList()
+    },
+    
+    // 顶部状态标签变化
+    onStatusTabChange() {
+      this.queryParams.workOrderStatus = this.activeStatusTab || null
       this.queryParams.pageNum = 1
       this.getList()
     },
