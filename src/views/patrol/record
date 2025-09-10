@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <!-- 筛选表单 -->
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="100px">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="false" v-show="showSearch" label-width="100px">
       <el-row :gutter="20">
         <el-col :span="6">
       <el-form-item label="项目单位" prop="unitId">
